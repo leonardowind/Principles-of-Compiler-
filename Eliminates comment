@@ -1,0 +1,184 @@
+#include <stdio.h>
+#include <string.h>
+#include <iostream>
+
+using namespace std;
+
+#define N 100
+int state = 0;
+FILE *fp1, *fp2;
+void DFA(char input);
+void DFA_matrix(char input);
+int GetInput(char input);
+
+void fun1(char c)
+{
+
+}
+
+void fun2(char c)
+{
+	fputc(c, fp2);
+}
+
+void fun3(char c)
+{
+	fputc('/', fp2); fputc(c, fp2);
+}
+
+void fun4(char c)
+{
+	fputc('\n', fp2);
+}
+
+int matrix[6][5] =
+{
+	{ 1, 0, 5, 0, 0 },
+	{ 4, 2, 0, 0, 0 },
+	{ 2, 3, 2, 2, 2 },
+	{ 0, 2, 2, 2, 2 },
+	{ 4, 4, 4, 0, 4 },
+	{ 5, 5, 0, 5, 5 }
+};
+
+void(*action_matrix[6][5])(char) =
+{
+	{ fun1, fun2, fun2, fun2, fun2 },
+	{ fun1, fun1, fun3, fun3, fun3 },
+	{ fun1, fun1, fun1, fun1, fun1 },
+	{ fun1, fun1, fun1, fun1, fun1 },
+	{ fun1, fun1, fun1, fun4, fun1 },
+	{ fun2, fun2, fun2, fun2, fun2 },
+};
+
+
+struct DFAInfo
+{
+	int state;
+	void(*action)(char);
+
+};
+
+DFAInfo su[6][5];
+
+void init()
+{
+	for (int i = 0; i < 6; i++)
+	for (int j = 0; j < 5; j++)
+	{
+		su[i][j].state = matrix[i][j];
+		su[i][j].action = action_matrix[i][j];
+
+	}
+}
+
+int main()
+{
+	char src[50], dest[50];
+
+	char str[N + 1];
+	int i;
+
+
+	fp2 = fopen("de.c", "w");
+
+	if ((fp1 = fopen("text.c", "r")) == NULL)
+	{
+		printf("Cannot open file strike any key exit!");
+		getchar();
+		return 0;
+	}
+	
+
+	init();
+	while (fgets(str, N, fp1) != NULL)
+	{
+		for (i = 0; i < N && str[i] != '\0'; i++)
+		{
+			DFA_matrix(str[i]);
+		}
+	}
+
+	fcloseall();
+	return 0;
+
+}
+
+int GetInput(char c)
+{
+	if (c == '/') return 0;
+	if (c == '*') return 1;
+	if (c == '"') return 2;
+	if (c == '\n') return 3;
+	return 4;
+
+}
+
+void DFA_matrix(char input)
+{
+	char c = input;
+	input = GetInput(input);
+	state = su[state][input].state;
+	su[state][input].action(c);
+
+	//(*p)(state, input);
+}
+
+
+//void DFA(char input)
+//{
+//
+//	switch (state)
+//	{
+//	case 0://初始状态
+//		switch (input)
+//		{
+//		case '/': state = 1; break;
+//		case '"': state = 5; fputc(input, fp2); break;
+//		default: state = 0; fputc(input, fp2); break;//输出
+//		}
+//		break;
+//	case 1://已接收一个‘/’
+//		switch (input)
+//		{
+//		case '*': state = 2; break;
+//		case '/': state = 4; break;
+//		default: state = 0; fputc('/', fp2); fputc(input, fp2); break;//先输出上次的'/',在输出input
+//		}
+//		break;
+//	case 2:
+//		switch (input)
+//		{
+//		case '*': state = 3; break;
+//		default: state = 2; break;//输出
+//		}
+//		break;
+//	case 3:
+//		switch (input)
+//		{
+//		case '/': state = 0; break;
+//		default: state = 2; break;
+//		}
+//		break;
+//	case 4:
+//		switch (input)
+//		{
+//		case '\n': state = 0; fputc('\n', fp2); break;
+//		default:state = 4; break;
+//		}
+//		break;
+//	case 5:
+//		switch (input)
+//		{
+//		case '"': state = 0; fputc(input, fp2); break;
+//		default: state = 5; fputc(input, fp2); break;
+//		}
+//		break;
+//
+//
+//	}
+//
+//
+//	////////////
+//
+//}
